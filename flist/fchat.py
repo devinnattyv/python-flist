@@ -18,8 +18,8 @@ class Character:
         return self.name
 
     def account_ban(self):
+        # ACB { character: "character" }
         self.protocol.message(opcode.ACCOUNT_BAN, {'character': self.name})
-        pass  # ACB { character: "character" }
 
     def make_op(self):
         pass  # AOP { character: "character" }
@@ -55,11 +55,8 @@ class Character:
         )
 
     def profile(self):
-        self.protocol.message(
-            opcode.PROFILE,
-            {'character': self.name}
-        )
-        pass  # PRO { character: "character" } -> PROFILE_DATA
+        # PRO { character: "character" } -> PROFILE_DATA
+        self.protocol.message(opcode.PROFILE,{'character': self.name})
 
     def reward(self):
         self.protocol.message(
@@ -147,12 +144,13 @@ class Channel:
         pass  # CUB { channel: "channel", character: "character" }
 
     def part(self):
+        # LCH { channel: "channel" }
         d = {'channel': self.name}
         self.protocol.message(opcode.LEAVE_CHANNEL, d)
-        pass  # LCH { channel: "channel" }
 
     def join(self):
-        # JCH { channel: "channel" }     JCH {"character": {"identity": "Hexxy"}, "channel": "Frontpage"}
+        # JCH { channel: "channel" }
+        # JCH {"character": {"identity": "Hexxy"}, "channel": "Frontpage"}
         d = {'channel': self.name}
         self.protocol.message(opcode.JOIN_CHANNEL, d)
 
@@ -166,7 +164,9 @@ class Channel:
         pass  # RAN { channel: "channel" }
 
     def roll(self, dice):
-        pass  # RLL { channel: "channel", dice: "1d10" }
+        # RLL { channel: "channel", dice: "1d10" }
+        d = {'channel': self.name, 'dice': dice}
+        self.protocol.message(opcode.ROLL, d)
 
     def set_status(self, status):
         pass  # RST { channel: "channel", status: "status" } ("private", "public")
@@ -242,8 +242,9 @@ class Connection(object):
         self.variables[var['variable']] = var['value']
 
     def _update_channels(self, update_list, channel_list):
-        # {"channels":[{"name":"Dragons","mode":"both","characters":0},{"name":"Frontpage"
-        #               ,"mode":"both","characters":0}, ... ]}
+        # {"channels":[{"name":"Dragons","mode":"both","characters":0},
+        #              {"name":"Frontpage","mode":"both","characters":0},
+        #              ... ]}
         # {"channels":[{"name":"ADH-********", "title": "Fuckit", "characters": 0}, ...]}
         channels = channel_list.get('channels', [])
         if channels:
@@ -261,7 +262,7 @@ class Connection(object):
             'ticket': self.character.account.ticket,
             'account': str(self.character.account),
             'character': str(self.character),
-            'cname': "StormyDragons F-List Python client (stormweyr.dk)",
+            'cname': "Devin Nat-tyv's F-List Python client (https://github.com/devinnattyv/python-flist)",
             'cversion': "pre-alpha",
         }
         self.protocol.message(opcode.IDENTIFY, data)
@@ -325,14 +326,13 @@ class Connection(object):
         self.protocol.message(opcode.LIST_PRIVATE_CHANNELS)
 
     def status(self, status, message):
+        # STA {"status": "looking", "statusmsg": "I'm always available to RP :)", "character": "Hexxy"}
         packet = {
             'character': str(self.character),
             'status': str(status),
             'statusmsg': str(message)
         }
-        # STA {"status": "looking", "statusmsg": "I'm always available to RP :)", "character": "Hexxy"}
-        self.protocol.message(opcode.STATUS,
-                              packet)
+        self.protocol.message(opcode.STATUS, packet)
 
     def uptime(self):
         self.protocol.message(opcode.UPTIME)
